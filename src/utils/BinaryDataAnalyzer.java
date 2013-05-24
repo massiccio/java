@@ -18,7 +18,7 @@ package utils;
  * WikipediaDataAnalysis
  * 
  * @(#)file BinaryDataAnalyzer
- * @(#)author Michele Mazzucco
+ * @(#)author <a href="mailto:michelemazzucco@gmail.com">Michele Mazzucco</a>
  * @(#)version 0.2
  * @(#)created Jan 29, 2010
  * @(#)lastedit May 24, 2013
@@ -51,6 +51,8 @@ import java.nio.channels.FileChannel.MapMode;
  * <p>
  * plot "cdf.txt" u 1:3 w l<p>
  * will plot the CDF.
+ * 
+ * The {@link #test(String)} method shows how to create an input file.
  */
 public class BinaryDataAnalyzer {
 
@@ -284,8 +286,8 @@ public class BinaryDataAnalyzer {
      * @param args
      */
     public static void main(String[] args) throws IOException {
-        final String input = "test.tmp"; // in.nextLine();
-        final String output = "cdf.txt";// in.nextLine();
+        final String input = "test.tmp";
+        final String output = "cdf.txt";
         
         //test(input);
 
