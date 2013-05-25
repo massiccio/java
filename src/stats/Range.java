@@ -15,7 +15,7 @@
 
 package stats;
 
-/**
+/*
  * Range
  * 
  * @(#)file Range.java

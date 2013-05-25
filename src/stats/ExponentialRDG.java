@@ -14,8 +14,8 @@
  */
 
 package stats;
-/**
- * 
+
+/* 
  * @(#)file ExponentialRDG.java
  * @(#)author Michele Mazzucco
  * @(#)version 0.3

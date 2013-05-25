@@ -15,7 +15,7 @@
 
 package stats;
 
-/**
+/*
  * @(#)file Counter.java
  * @(#)author Michele Mazzucco
  * @(#)version 0.1
@@ -23,6 +23,10 @@ package stats;
  * @(#)lastedit May 25, 2013
  */
 
+
+/**
+ * Counter
+ */
 public class Counter {
 
     protected long counter;

@@ -15,12 +15,12 @@
 
 package stats;
 
-/**
+/*
  * @(#)file RDG.java
  * @(#)author <a href="mailto:michelemazzucco@gmail.com">Michele Mazzucco</a>
  * @(#)version 0.1
  * @(#)created Mar 8, 2010
- * @(#)lastedit May 25, 2015
+ * @(#)lastedit May 25, 2013
  */
 
 /**

@@ -15,6 +15,13 @@
 
 package stats;
 
+/* 
+ * @(#)file LogNormalRDG.java
+ * @(#)author Michele Mazzucco
+ * @(#)version 0.3
+ * @(#)created Jan 27, 2010
+ * @(#)lastedit April 12, 2012
+ */
 
 
 /**

@@ -15,7 +15,7 @@
 
 package stats;
 
-/**
+/*
  * @(#)file Deviate.java
  * @(#)author Michele Mazzucco
  * @(#)version 0.1

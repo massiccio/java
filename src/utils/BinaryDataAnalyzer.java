@@ -14,8 +14,9 @@
  */
 
 package utils;
-/**
- * WikipediaDataAnalysis
+
+/*
+ * BinaryDataAnalyzer
  * 
  * @(#)file BinaryDataAnalyzer
  * @(#)author <a href="mailto:michelemazzucco@gmail.com">Michele Mazzucco</a>
