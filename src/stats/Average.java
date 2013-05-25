@@ -22,7 +22,7 @@ package stats;
  * @(#)author <a href="mailto:michelemazzucco@gmail.com">Michele Mazzucco</a>
  * @(#)version 0.1
  * @(#)created Jun 19, 2008
- * @(#)created Jun 19, 2008
+ * @(#)lastedit May 25, 2013
  */
 
 
@@ -34,14 +34,16 @@ package stats;
  * state can be reset by means of the {@link #reset()} method.
  * 
  */
-public class Average implements Range {
+public class Average extends Counter {
 
 	protected double aggregate;
-	private long events;
+	
 	private double max;
+	
 	private double min;
 
 	public Average() {
+		super();
 		reset();
 	}
 
@@ -49,8 +51,8 @@ public class Average implements Range {
 	 * Resets the internal state of this object.
 	 */
 	public void reset() {
+		super.reset();
 		aggregate = 0L;
-		events = 0L;
 		max = 0.d;
 		min = 0.d;
 	}
@@ -62,10 +64,10 @@ public class Average implements Range {
 	 *            The value to add.
 	 */
 	public void add(double value) {
+		super.increment();
 		this.aggregate += value;
-		this.events++;
 
-		if (this.events == 1) { // Added to prevent miscalculations with minimum
+		if (super.counter == 1L) { // Added to prevent miscalculations with minimum
 								// and maximum.
 			this.min = value;
 			this.max = value;
@@ -81,14 +83,14 @@ public class Average implements Range {
 	 * @return Average as double
 	 * */
 	public double mean() {
-		if (this.events == 0L) {
+		if (super.counter == 0L) {
 			return 0.d;
 		}
-		return (this.aggregate / this.events);
+		return (this.aggregate / super.counter);
 	}
 
 	public double sum() {
-		if (this.events == 0L) {
+		if (super.counter == 0L) {
 			return 0.d;
 		}
 		return this.aggregate;
@@ -100,7 +102,7 @@ public class Average implements Range {
 	 * @return Size of range as long.
 	 */
 	public final long size() {
-		return this.events;
+		return super.getCounter();
 	}
 
 	public final double getMax() {
