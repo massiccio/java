@@ -273,7 +273,7 @@ public class MMnKQueue {
 				maxIndex, max);
 
 		System.out.printf("Probability that the response time exceeds 2 sec" +
-				" given that the service time is 1 sec [%.10f]\n",
+				" given that the service rate is 1 [%.10f]\n",
 				mmnk.calculateP(2.0, 1.0));
 //		System.out.println(mmnk.p[1900]);
 	}
