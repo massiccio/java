@@ -15,7 +15,7 @@
 
 package stats;
 
-/* 
+/** 
  * @(#)file LogNormalRDG.java
  * @(#)author Michele Mazzucco
  * @(#)version 0.3

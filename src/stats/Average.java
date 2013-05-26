@@ -15,7 +15,7 @@
 
 package stats;
 
-/*
+/**
  * Average
  * 
  * @(#)file Average.java

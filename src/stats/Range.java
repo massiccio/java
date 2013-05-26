@@ -15,9 +15,7 @@
 
 package stats;
 
-/*
- * Range
- * 
+/**
  * @(#)file Range.java
  * @(#)author <a href="mailto:michelemazzucco@gmail.com">Michele Mazzucco</a>
  * @(#)version 0.1

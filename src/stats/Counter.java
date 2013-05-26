@@ -15,7 +15,7 @@
 
 package stats;
 
-/*
+/**
  * @(#)file Counter.java
  * @(#)author Michele Mazzucco
  * @(#)version 0.1

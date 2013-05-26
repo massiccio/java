@@ -15,7 +15,7 @@
 
 package utils;
 
-/*
+/**
  * BinaryDataAnalyzer
  * 
  * @(#)file BinaryDataAnalyzer

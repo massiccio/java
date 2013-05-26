@@ -16,7 +16,7 @@
 
 package stats;
 
-/*
+/**
  * Cov
  * 
  * @(#)file Cov.java
