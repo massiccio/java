@@ -1,4 +1,6 @@
 /*
+ * Copyright (C) 2013 Michele Mazzucco
+ * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -57,6 +59,9 @@ public class MMnKQueue {
 	 * @param rho The load.
 	 */
 	public MMnKQueue(int n, int k, double rho) {
+		if (n < 1) {
+			throw new IllegalArgumentException("Need at least one server!");
+		}
 		if (n > k) {
 			throw new IllegalArgumentException("n cannot be larger than k!");
 		}
@@ -164,6 +169,7 @@ public class MMnKQueue {
 		return p;
 	}
 
+	
 	/**
 	 * Computes the probability that the response time exceeds x.
 	 * 
@@ -172,13 +178,11 @@ public class MMnKQueue {
 	 * @param mu The service rate.
 	 * @return The probability that the response time exceeds x, given that the
 	 *         service rate is &mu;.
-	 * @see Eq. 12 <a href="http://www.cs.ncl.ac.uk/publications/inproceedings/papers/991.pdf">here</a>.
-	 * @throws IllegalArgumentException If n = 1.
+	 * @see Eq. 12 <a href=
+	 *      "http://www.cs.ncl.ac.uk/publications/inproceedings/papers/991.pdf"
+	 *      >here</a>.
 	 */
 	public double calculateP(double x, double mu) {
-		if (n <= 1) {
-			throw new IllegalArgumentException("This formula is not defined for n = 1");
-		}
 		// Stores probabilities P(Wj>x) for each 0 <= j <= k-1
 		double[] P = new double[this.k + 1];
 
@@ -189,6 +193,8 @@ public class MMnKQueue {
 				P[j] = 0.0;
 				double sum = 0.0;
 				for (int i = 0; i <= j; i++) {
+					//XXX: this step can be improved by dividing (mu*x) 
+					// by i=0..j and summing the result
 					double addOn = Math.pow(mu * x, (double) i);
 					if (i != 0) {
 						for (int m = 1; m <= i; m++)
@@ -219,6 +225,8 @@ public class MMnKQueue {
 							- mult
 							* Math.pow((double) (n - 1) * mu * x, (double) i);
 					if (i != 0) {
+						// XXX: this factorial is likely to be the cause of NaN
+						// for small values
 						for (int m = 1; m <= i; m++)
 							addOn /= (double) m;
 					} // dividing addOn by factorial(i);
@@ -229,9 +237,13 @@ public class MMnKQueue {
 			}
 		}
 
+		// We have obtained the conditional response time, e.g., P(W > x)
+		// given that there are i jobs in the system and given mu and lambda.
+		// Now let's obtain the probability that the response time exceeds x.
+
 		double prob = 0.0;
 		for (int i = 0; i < P.length; i++) {
-			// System.out.println("P[W_" + i + "]>x = "+ P[i]);
+//			System.out.println("P[W_" + i + "]>x = " + P[i]);
 			if (!Double.isNaN(P[i])) {
 				// XXX: some probabilities might be NaN. This happens when
 				// p[i] is really small, e.g., 9.79745930930059E-44
@@ -245,9 +257,9 @@ public class MMnKQueue {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		int n = 1000; // servers
-		int k = 2000; // queue threshold
-		double load = 905.0; // lambda / mu
+		int n = 1; // servers
+		int k = 10 * n; // queue threshold
+		double load = 0.99 * n; // lambda / mu
 
 		MMnKQueue mmnk = new MMnKQueue(n, k, load);
 
@@ -272,10 +284,11 @@ public class MMnKQueue {
 		System.out.printf("Most likely state [%d] with probability [%.10f]\n",
 				maxIndex, max);
 
-		System.out.printf("Probability that the response time exceeds 2 sec" +
-				" given that the service rate is 1 [%.10f]\n",
-				mmnk.calculateP(2.0, 1.0));
-//		System.out.println(mmnk.p[1900]);
+		double x = 2.0;
+		double mu = 0.9;
+		System.out.printf("Probability that the response time exceeds %.2f sec"
+				+ " given that the service rate is %.2f [%.10f]\n", x, mu,
+				mmnk.calculateP(x, mu));
 	}
 
 }
