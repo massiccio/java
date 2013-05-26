@@ -165,14 +165,20 @@ public class MMnKQueue {
 	}
 
 	/**
-	 * Computes the probability that the response time exceeds x
+	 * Computes the probability that the response time exceeds x.
+	 * 
 	 * 
 	 * @param x The target response time.
 	 * @param mu The service rate.
 	 * @return The probability that the response time exceeds x, given that the
 	 *         service rate is &mu;.
+	 * @see Eq. 12 <a href="http://www.cs.ncl.ac.uk/publications/inproceedings/papers/991.pdf">here</a>.
+	 * @throws IllegalArgumentException If n = 1.
 	 */
 	public double calculateP(double x, double mu) {
+		if (n <= 1) {
+			throw new IllegalArgumentException("This formula is not defined for n = 1");
+		}
 		// Stores probabilities P(Wj>x) for each 0 <= j <= k-1
 		double[] P = new double[this.k + 1];
 
