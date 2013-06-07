@@ -15,50 +15,35 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package stats;
-
 /**
- * @(#)file Counter.java
+ * @(#)file Listener.java
  * @(#)author Michele Mazzucco
  * @(#)version 0.1
  * @(#)created Mar 29, 2012
- * @(#)lastedit May 25, 2013
+ * @(#)lastedit Mar 29, 2012
  */
 
+package http;
 
 /**
- * Counter
+ * Observer pattern.
  */
-public class Counter {
+public interface Listener {
+	
+	/**
+	 * Notifies this listener that the Download object specified as argument
+	 * has completed.
+	 * 
+	 * @param download The completed request.
+	 */
+    public void done(Download download);
 
-    protected long counter;
-
     /**
-     * Creates a new Counter object initialized at 0.
-     */
-    public Counter() {
-        counter = 1L;
-    }
-    
-    
-    /**
-     * Increments the value of counter by one.
-     */
-    public void increment() {
-    	this.counter++;
-    }
-    
-    /**
-     * Gets the number of times the {@link #increment()} has been called.
-     * 
-     * @return The value of counter.
-     */
-    public long getCounter() {
-		return counter;
-	}
-    
-    protected void reset() {
-    	this.counter = 0L;
-    }
-    
+	 * Notifies this listener that the Download object specified as argument
+	 * has completed abnormally.
+	 * 
+	 * @param download The request.
+	 * @param throwable The exception.
+	 */
+    public void error(Download download, Throwable throwable);
 }
