@@ -46,8 +46,9 @@ import java.util.logging.Logger;
  */
 public class MillisecondLogFormatter extends Formatter {
 
-	// Create a DateFormat to format the logger timestamp.
-	private static final DateFormat df = new SimpleDateFormat("hh:mm:ss.SSS");
+	// this field should not be static, as the
+	// format method is not thread safe
+	private final DateFormat df;
 
 	private Date dat;
 
@@ -57,6 +58,7 @@ public class MillisecondLogFormatter extends Formatter {
 	public MillisecondLogFormatter() {
 		super();
 		dat = new Date();
+		df = new SimpleDateFormat("hh:mm:ss.SSS"); // log timestamps
 	}
 
 	/**
