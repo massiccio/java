@@ -33,7 +33,6 @@ import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
 import java.nio.charset.Charset;
 import java.security.SecureRandom;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -104,8 +103,10 @@ public class Crawler extends Thread {
             this.log = log;
         selector = Selector.open(); // create Selector
         buffer = ByteBuffer.allocateDirect(64 * 1024); // allocate buffer
+        
+        // the linked list is more efficient than an array list in this scenario 
         pendingDownloads = Collections
-                .synchronizedList(new ArrayList<Download>());
+                .synchronizedList(new LinkedList<Download>());
 
         stream = new Stream();
         connections = 0;
@@ -147,9 +148,7 @@ public class Crawler extends Thread {
         Download download = new DownloadImpl(hostname, port, path, l);
 
         // Add it to the list of pending downloads. This is a synchronized list
-        synchronized (this.pendingDownloads) {
-            pendingDownloads.add(download);
-        }
+        pendingDownloads.add(download);
 
         // http://netty.io/docs/stable/xref/org/jboss/netty/channel/socket/nio/NioWorker.html
 
@@ -180,57 +179,61 @@ public class Crawler extends Thread {
         }
         this.stream.close();
     }
-
+    
+    
     private final int checkPendingDownloads() {
-        int result = 0;
-        synchronized (pendingDownloads) {
-            // If any new Download objects are pending, deal with them first
-            if (!pendingDownloads.isEmpty()) {
-                // Although pendingDownloads is a synchronized list, we
-                // still
-                // need to use a synchronized block to iterate through its
-                // elements to prevent a concurrent call to download().
-
-                Iterator<Download> iter = pendingDownloads.iterator();
-                while (iter.hasNext()) {
-                    // Get the pending download object from the list
-                    Download download = iter.next();
-                    iter.remove(); // And remove it.
-                    result += 1;
-
-                    // Now begin an asynchronous connection to the
-                    // specified host and port. We don't block while
-                    // waiting to connect.
-                    SelectionKey key = null;
-                    SocketChannel channel = null;
-                    try {
-                        // Open an unconnected channel
-                        channel = SocketChannel.open();
-                        // Put it in non-blocking mode
-                        channel.configureBlocking(false);
-                        // Register it with the selector, specifying that
-                        // we want to know when it is ready to connect
-                        // and when it is ready to read.
-                        key = channel.register(selector, SelectionKey.OP_READ
-                                | SelectionKey.OP_CONNECT
-                                | SelectionKey.OP_WRITE, download);
-                        // Create the web server address
-                        SocketAddress address = new InetSocketAddress(
-                                download.getHost(), download.getPort());
-                        // Ask the channel to start connecting
-                        // Note that we don't send the HTTP request yet.
-                        // We'll do that when the connection completes.
-                        channel.connect(address);
-                        channel.socket().setSoTimeout(20000);
-                        channel.socket().setReuseAddress(true);
-                    } catch (Exception e) {
-                        handleError(download, channel, key, e);
-                    }
-                }
-                this.pendingDownloads.clear();
-            }
+    	int results = 0;
+    	while (true) {
+    		Download download = null;
+    		synchronized (pendingDownloads) {
+    			if (pendingDownloads.isEmpty()) {
+    				break; // no downloads, exit
+    			}
+    			
+    			// else block
+    			download = this.pendingDownloads.remove(0);
+			} // end synchronized block
+    		results++;
+    		
+    		// prepare the download outside the synchronized block.
+    		prepareDownload(download);
+    	}
+    	return results;
+    }
+    
+    
+    /**
+     * Prepares the download.
+     */
+    private final void prepareDownload(Download download) {
+    	// Now begin an asynchronous connection to the
+        // specified host and port. We don't block while
+        // waiting to connect.
+        SelectionKey key = null;
+        SocketChannel channel = null;
+        try {
+            // Open an unconnected channel
+            channel = SocketChannel.open();
+            // Put it in non-blocking mode
+            channel.configureBlocking(false);
+            // Register it with the selector, specifying that
+            // we want to know when it is ready to connect
+            // and when it is ready to read.
+            key = channel.register(selector, SelectionKey.OP_READ
+                    | SelectionKey.OP_CONNECT
+                    | SelectionKey.OP_WRITE, download);
+            // Create the web server address
+            SocketAddress address = new InetSocketAddress(
+                    download.getHost(), download.getPort());
+            // Ask the channel to start connecting
+            // Note that we don't send the HTTP request yet.
+            // We'll do that when the connection completes.
+            channel.connect(address);
+            channel.socket().setSoTimeout(20000);
+            channel.socket().setReuseAddress(true);
+        } catch (Exception e) {
+            handleError(download, channel, key, e);
         }
-        return result;
     }
 
     private final void processSelectionKey() {
@@ -417,18 +420,19 @@ public class Crawler extends Thread {
             }
 
             int pending = checkPendingDownloads();
-            if (pending == 0 && selected == 0) {
-                if (log.isLoggable(Level.FINE)) {
-                    log.fine("Idling!!!");
-                }
-                try {
-                    Thread.sleep(10);
-                } catch (InterruptedException e) {
-                    Thread.interrupted();
-                }
-            } else {
+//            if (pending == 0 && selected == 0) {
+//                if (log.isLoggable(Level.FINE)) {
+//                    log.warning("Idling!!!");
+//                }
+//                try {
+//                    Thread.sleep(10);
+//                } catch (InterruptedException e) {
+//                    Thread.interrupted();
+//                }
+//            } else {
+            if (pending > 0 || selected > 0)
                 processSelectionKey();
-            }
+//            }
         }
         log.info("Crawler thread exiting.");
     }
