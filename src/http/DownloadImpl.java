@@ -27,7 +27,22 @@ package http;
 
 import java.nio.ByteBuffer;
 
+/**
+ * This class represents a download.
+ * <p>
+ * This class is not thread safe. The state of this class is changed only by the
+ * {@linkplain Crawler} in charge of the download.
+ * <p>
+ * In order to reduce the number of memory allocations, the buffer used to store
+ * downloaded data is initialized to 300 KB by default. The
+ * {@link #DownloadImpl(String, int, String, Listener, int)} constructor allows
+ * to specify the buffer size. This way one can decrease the memory wastage
+ * (i.e., if the downloads are small) at the expenses of slightly higher CPU
+ * consumption (as buffer reallocations will occur more frequently).
+ */
 class DownloadImpl implements Download {
+
+	private static final int BUFFER_SIZE = 300 * 1024;
 
 	final String host; // Final fields are immutable for thread-saftey
 
@@ -40,7 +55,8 @@ class DownloadImpl implements Download {
 	private volatile Status status; // Volatile fields may be changed
 									// concurrently
 
-	private volatile byte[] data;
+	private volatile byte[] data; // array where data is written
+	private volatile int bytesWritten; // number of bytes written
 
 	/** Timestamp of CONNECTED event. */
 	private volatile long start;
@@ -49,7 +65,8 @@ class DownloadImpl implements Download {
 	private volatile long stop;
 
 	/**
-	 * Creates a new object with the specified state.
+	 * Creates a new object with the specified state and buffer initialized at
+	 * 300 KB.
 	 * 
 	 * @param host The host.
 	 * @param port The port.
@@ -57,12 +74,27 @@ class DownloadImpl implements Download {
 	 * @param listener Listener, for observer pattern (can be null).
 	 */
 	DownloadImpl(String host, int port, String path, Listener listener) {
+		this(host, port, path, listener, BUFFER_SIZE);
+	}
+
+	/**
+	 * Creates a new object with the specified state.
+	 * 
+	 * @param host The host.
+	 * @param port The port.
+	 * @param path The path.
+	 * @param bufferSize The buffer size for downloads.
+	 * @param listener Listener, for observer pattern (can be null).
+	 */
+	DownloadImpl(String host, int port, String path, Listener listener,
+			int bufferSize) {
 		this.host = host;
 		this.port = port;
 		this.path = path;
 		this.listener = listener;
 		this.status = Status.UNCONNECTED; // Set initial status
-		data = new byte[0];
+		data = new byte[bufferSize];
+		bytesWritten = 0;
 	}
 
 	// These are the basic getter methods
@@ -120,7 +152,7 @@ class DownloadImpl implements Download {
 	 * Gets the amount of bytes downloaded.
 	 */
 	public int getDataLength() {
-		return this.data.length;
+		return this.bytesWritten;
 	}
 
 	/**
@@ -136,21 +168,30 @@ class DownloadImpl implements Download {
 				* 1;
 	}
 
-	// Used internally when we read more data.
-	// This should use a larger buffer to prevent frequent re-allocation.
+	/**
+	 * Adds data to the internal buffer. Resizes the buffer if it is necessary.
+	 */
 	public void addData(ByteBuffer buffer) {
-		// experiments showed it is usually resized 1 time at most
-
 		if (status != Status.CONNECTED) { // only called during download
 			throw new IllegalStateException("Download in " + status.toString()
 					+ " status");
 		}
+
 		int oldlen = data.length; // How many existing bytes
 		int numbytes = buffer.remaining(); // How many new bytes
-		int newlen = (oldlen + numbytes);
-		byte[] newdata = new byte[newlen]; // Create new array
-		System.arraycopy(data, 0, newdata, 0, oldlen); // Copy old bytes
-		buffer.get(newdata, oldlen, numbytes); // Copy new bytes
-		data = newdata; // Save new array
+		final int written = this.bytesWritten; // how many bytes are already in
+												// the buffer
+		if (numbytes > oldlen - written) {
+			// create new buffer
+			int newlen = (oldlen + Math.max(BUFFER_SIZE, numbytes));
+			byte[] newdata = new byte[newlen]; // Create new array
+			System.arraycopy(data, 0, newdata, 0, oldlen); // Copy old bytes
+			buffer.get(newdata, oldlen, numbytes); // Copy new bytes
+			data = newdata; // Save new array
+		} else {
+			// the current buffer is enough to hold the new data
+			buffer.get(this.data, written, numbytes);
+		}
+		this.bytesWritten += numbytes;
 	}
 }
