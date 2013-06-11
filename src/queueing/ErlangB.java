@@ -34,21 +34,6 @@ public class ErlangB {
 	 * Computes the blocking probability of an Erlang-B queue with n trunks and
 	 * traffic intensity load.
 	 * 
-	 * @return The blocking probability pn, 0.0 <= pn <= 1.0
-	 * @deprecated
-	 */
-	public static final double erlangBOld(int n, double load) {
-		double s = 0d;
-		for (int i = 1; i <= n; i++) {
-			s = (1.0 + s) * (i / load);
-		}
-		return (1.0 / (1.0 + s));
-	}
-
-	/**
-	 * Computes the blocking probability of an Erlang-B queue with n trunks and
-	 * traffic intensity load.
-	 * 
 	 * @return The blocking probability pn, 0.0 <= pn <= 1.0.
 	 */
 	public static final double erlangB(int n, double load) {
@@ -59,8 +44,8 @@ public class ErlangB {
 		return pn;
 	}
 
-	protected static final double computeRecursive(int n, double load,
-			double pn_1) {
+	protected static final double computeRecursive(double n, double load,
+		double pn_1) {
 		return (load * pn_1) / (n + load * pn_1);
 	}
 
@@ -128,9 +113,38 @@ public class ErlangB {
 		// eq. 4
 		double pn = tmp;
 		for (int i = 1; i <= nInt; i++) {
-			pn = (load * pn) / (i + s + load * pn);
+			pn = computeRecursive(i + s, load, pn);
 		}
 		return pn;
+	}
+
+	/**
+	 * Computes the blocking probability of an Erlang-B queue with n trunks and
+	 * traffic intensity load in closed form using Rapp approximation (which
+	 * employs a parabola)
+	 * <p>
+	 * This routine employs the approximates of the Erlang loss formula by a
+	 * parabola using Rapp's algorithm:
+	 * <p>
+	 * E(n, load) = c<sub>0</sub> - c<sub>1</sub> n + c<sub>2</sub>
+	 * n<sup>2</sup> where <lu>
+	 * <li>c<sub>0</sub> = 1
+	 * <li>c<sub>1</sub> = (load+2) + ((1+load)<sup>2</sup> + load)
+	 * <li>c<sub>2</sub> = 1 / ((1 + load) * ((1+load)<sup>2</sup> + load))
+	 * </lu>
+	 * 
+	 * @param n The number of servers.
+	 * @param load The offered load.
+	 * @return The blocking probability pn, 0.0 <= pn <= 1.0
+	 */
+	public static final double rappAprrox(double n, double load) {
+		double c0 = 1d;
+
+		double tmp = (1d + load) * (1d + load);
+		double c1 = -((2d + load) / (tmp + load));
+		double c2 = 1d / ((1d + load) * (tmp + load));
+		final double res = c0 + (c1 * n) + (c2 * (n * n));
+		return res;
 	}
 
 	/**
@@ -158,10 +172,9 @@ public class ErlangB {
 		}
 		return n;
 	}
-	
-	
+
 	/**
-	 * Computes the maximum amount of traffic that can be allowed, given the 
+	 * Computes the maximum amount of traffic that can be allowed, given the
 	 * amount of servers and blocking probability.
 	 * 
 	 * @param n The number of servers.
@@ -169,25 +182,24 @@ public class ErlangB {
 	 * @return The maximum amount of traffic.
 	 */
 	public static double findMaxLoad(final int n, final double blockingProb) {
-		 ErlangBFunction fun = new ErlangBFunction(n, blockingProb);
-		 
-		 return BisectionSearch.bisect(fun, 0.0, n);
+		ErlangBFunction fun = new ErlangBFunction(n, blockingProb);
+
+		return BisectionSearch.bisect(fun, 0.0, n);
 	}
 
-	
-
 	public static void main(String[] args) {
-		// double n = 2.3;
-		// double load = 2.1;
+		double n = 2.3;
+		double load = 2.1;
 		// System.out.println(erlangBOld(5, 4));
 		// System.out.println(erlangB(5, 4));
 		// System.out.println(findMinServers(4, 0.1999));
-		// System.out.println(erlangBApprox(n, load));
-		// System.out.println(erlangBNonInt(n, load));
+		System.out.println(erlangBApprox(n, load));
+		System.out.println(erlangBNonInt(n, load));
+		System.out.println(rappAprrox(n, load));
 
-		double max = findMaxLoad(10, 0.4);
-		System.out.println(max);
-		System.out.println(erlangB(10, max));
+		// double max = findMaxLoad(10, 0.4);
+		// System.out.println(max);
+		// System.out.println(erlangB(10, max));
 	}
 
 	static class ErlangBFunction implements RootFunction {
