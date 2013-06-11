@@ -117,7 +117,6 @@ class DownloadImpl implements Download {
 	/**
 	 * @see Download#setStatus(LoadGeneratorAsync.Status)
 	 */
-	@Override
 	public void setStatus(Status status) {
 		if (status == Status.CONNECTED) {
 			this.start = System.currentTimeMillis();
@@ -131,7 +130,6 @@ class DownloadImpl implements Download {
 	/**
 	 * @see Download#getListener()
 	 */
-	@Override
 	public Listener getListener() {
 		return this.listener;
 	}
