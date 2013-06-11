@@ -17,7 +17,6 @@
 
 package utils;
 
-
 /**
  * IOUtils
  * 
@@ -35,99 +34,99 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.RandomAccessFile;
 
-
 /**
  * IO utilities.
  */
 public class IOUtils {
-	
+
 	/**
-     * Returns the last line of a text file.
-     * 
-     * @param file The file.
-     * @return The last line.
-     * @see {@link http
-     *      ://stackoverflow.com/questions/686231/java-quickly-read-the
-     *      -last-line-of-a-text-file}
-     */
-    public static String tail(File file) {
-    	RandomAccessFile fileHandler = null;
-        try {
-            fileHandler = new RandomAccessFile(file, "r");
-            long fileLength = file.length() - 1;
-            StringBuilder sb = new StringBuilder();
+	 * Returns the last line of a text file.
+	 * 
+	 * @param file The file.
+	 * @return The last line.
+	 * @see {@link http
+	 *      ://stackoverflow.com/questions/686231/java-quickly-read-the
+	 *      -last-line-of-a-text-file}
+	 */
+	public static String tail(File file) {
+		RandomAccessFile fileHandler = null;
+		try {
+			fileHandler = new RandomAccessFile(file, "r");
+			long fileLength = file.length() - 1;
+			StringBuilder sb = new StringBuilder();
 
-            for (long filePointer = fileLength; filePointer != -1; filePointer--) {
-                fileHandler.seek(filePointer);
-                int readByte = fileHandler.readByte();
+			for (long filePointer = fileLength; filePointer != -1; filePointer--) {
+				fileHandler.seek(filePointer);
+				int readByte = fileHandler.readByte();
 
-                if (readByte == 0xA) {
-                    if (filePointer == fileLength) {
-                        continue;
-                    }
-                    break;
-                } else if (readByte == 0xD) {
-                    if (filePointer == fileLength - 1) {
-                        continue;
-                    }
-                    break;
-                }
+				if (readByte == 0xA) {
+					if (filePointer == fileLength) {
+						continue;
+					}
+					break;
+				} else if (readByte == 0xD) {
+					if (filePointer == fileLength - 1) {
+						continue;
+					}
+					break;
+				}
 
-                sb.append((char) readByte);
-            }
-
-            String lastLine = sb.reverse().toString();
-            return lastLine;
-        } catch (java.io.FileNotFoundException e) {
-            e.printStackTrace();
-            return null;
-        } catch (java.io.IOException e) {
-            e.printStackTrace();
-            return null;
-        } finally {
-        	try {
-				fileHandler.close();
-			} catch (IOException e) {
-				// ignore
+				sb.append((char) readByte);
 			}
-        }
-    }
 
+			String lastLine = sb.reverse().toString();
+			return lastLine;
+		} catch (java.io.FileNotFoundException e) {
+			e.printStackTrace();
+			return null;
+		} catch (java.io.IOException e) {
+			e.printStackTrace();
+			return null;
+		} finally {
+			if (fileHandler != null) {
+				try {
+					fileHandler.close();
+				} catch (IOException e) {
+					// ignore
+				}
+			}
+		}
+	}
 
-    /**
-     * Counts the number of lines in a text file, excluding the lines starting
-     * with the character '#'.
-     * 
-     * @param file The file.
-     * @return The number of lines in the file.
-     * @throws IOException If an error occurs while opening the file.
-     */
-    public static int count(File file) throws IOException {
-        InputStream is = new BufferedInputStream(new FileInputStream(file));
-        try {
-            byte[] c = new byte[1024];
-            int count = 0;
-            int readChars = 0;
+	/**
+	 * Counts the number of lines in a text file, excluding the lines starting
+	 * with the character '#'.
+	 * 
+	 * @param file The file.
+	 * @return The number of lines in the file.
+	 * @throws IOException If an error occurs while opening the file.
+	 */
+	public static int count(File file) throws IOException {
+		InputStream is = new BufferedInputStream(new FileInputStream(file));
+		try {
+			byte[] c = new byte[1024];
+			int count = 0;
+			int readChars = 0;
 
-            boolean enabled = true;
-            while ((readChars = is.read(c)) != -1) {
-                for (int i = 0; i < readChars; ++i) {
-                    if (c[i] == '#') {
-                        enabled = false;
-                    }
-                    if (c[i] == '\n') {
-                        if (enabled) {
-                            ++count;
-                        } else {
-                            enabled = true;
-                        }
-                    }
-                }
-            }
-            return count;
-        } finally {
-            is.close();
-        }
-    }
+			boolean enabled = true;
+			while ((readChars = is.read(c)) != -1) {
+				for (int i = 0; i < readChars; ++i) {
+					if (c[i] == '#') {
+						enabled = false;
+					}
+					if (c[i] == '\n') {
+						if (enabled) {
+							++count;
+						} else {
+							enabled = true;
+						}
+					}
+				}
+			}
+			return count;
+		} finally {
+			is.close();
+		}
+	}
 
 }

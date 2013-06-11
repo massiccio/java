@@ -44,7 +44,7 @@ public class NormalDistribution {
 		double b = x;
 		double q = x * x;
 		int i = 1;
-		while (s != t)
+		while (Math.abs(s - t) > 0.000000001)
 			s = (t = s) + (b *= q / (i += 2));
 		return .5 + s * Math.exp(-.5 * q - .91893853320467274178);
 	}
@@ -84,9 +84,16 @@ public class NormalDistribution {
 			.0622586659950261958 };
 		int i, j;
 		i = j = (int) (0.5 * (Math.abs(x) + 1.0));
-		double pwr = 1, a = R[j], z = 2 * j, b = a * z - 1, h = Math.abs(x) - z, s = a
-			+ h * b, t = a, q = h * h;
-		for (i = 2; s != t; i += 2) {
+		double pwr = 1.0;
+		double a = R[j];
+		double z = 2 * j;
+		double b = a * z - 1;
+		double h = Math.abs(x) - z;
+		double s = a + h * b;
+		double t = a;
+		double q = h * h;
+//		for (i = 2; s != t; i += 2) {
+		for (i = 2; Math.abs(s - t) > 0.000000001; i += 2) {
 			a = (a + z * b) / i;
 			b = (b + z * a) / (i + 1);
 			pwr *= q;

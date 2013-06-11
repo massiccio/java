@@ -15,50 +15,41 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package stats;
+package http;
+
 
 /**
- * @(#)file Counter.java
+ * @(#)file Status.java
  * @(#)author Michele Mazzucco
  * @(#)version 0.1
  * @(#)created Mar 29, 2012
- * @(#)lastedit May 25, 2013
+ * @(#)lastedit Mar 29, 2012
  */
-
 
 /**
- * Counter
+ * Download status.
  */
-public class Counter {
+public class Status {
+    
+	/** We haven't connected to the server yet. */
+    public static final Status UNCONNECTED = new Status("Unconnected");
 
-    protected long counter;
+    /** We're connected to the server, sending request or receiving response. */
+    public static final Status CONNECTED = new Status("Connected");
 
-    /**
-     * Creates a new Counter object initialized at 0.
-     */
-    public Counter() {
-        counter = 1L;
+    /** Response has been received. Response may have been an HTTP error. */
+    public static final Status DONE = new Status("Done");
+
+    /** Something went wrong: bad hostname, for example. */
+    public static final Status ERROR = new Status("Error");
+
+    private final String name;
+
+    private Status(String name) {
+        this.name = name;
     }
-    
-    
-    /**
-     * Increments the value of counter by one.
-     */
-    public void increment() {
-    	this.counter++;
+
+    public String toString() {
+        return name;
     }
-    
-    /**
-     * Gets the number of times the {@link #increment()} has been called.
-     * 
-     * @return The value of counter.
-     */
-    public long getCounter() {
-		return counter;
-	}
-    
-    protected void reset() {
-    	this.counter = 0L;
-    }
-    
 }

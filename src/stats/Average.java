@@ -1,4 +1,6 @@
 /*
+ * Copyright (C) 2013 Michele Mazzucco
+ * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -108,6 +110,11 @@ public class Average extends Counter {
 	public final double getMax() {
 		return this.max;
 	}
+	
+	public final double getAggregate() {
+		return this.aggregate;
+	}
+	
 
 	public final double getMin() {
 		return this.min;
