@@ -77,8 +77,8 @@ public class GammaFunction {
 	}
 
 	/**
-	 * Computes the lower incomplete gamma function, &gamma;(s,x)= integral from
-	 * zero to x of (exp(-t)t^(s-1))dt.
+	 * Computes the lower incomplete gamma function, &gamma;(a,x)= integral from
+	 * zero to x of (exp(-t)t^(a-1))dt.
 	 * <p>
 	 * This is the same as Igamma(a, x, lower=TRUE) in the zipfR in R.
 	 * 
