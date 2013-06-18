@@ -57,18 +57,22 @@ public class MMnKQueue {
 	 * @param n The number of servers.
 	 * @param k The queue threshold.
 	 * @param rho The load.
+	 * @throws IllegalArgumentException If n < 1, &rho < 0, or n > k. 
 	 */
-	public MMnKQueue(int n, int k, double rho) {
+	public MMnKQueue(int n, int k, double rho) throws IllegalArgumentException {
 		if (n < 1) {
 			throw new IllegalArgumentException("Need at least one server!");
 		}
 		if (n > k) {
 			throw new IllegalArgumentException("n cannot be larger than k!");
 		}
+		if (rho < 0.0) {
+			throw new IllegalArgumentException("The load must be >= 0");
+		}
 		this.n = n;
 		this.k = k;
 		this.rho = rho;
-		p = normalizedNew();
+		p = computeProbabilities();
 		L = computeL();
 	}
 
@@ -88,7 +92,6 @@ public class MMnKQueue {
 	 */
 	public double[] getSteadyStateProbabilities() {
 		return this.p;
-
 	}
 
 	/**
@@ -125,7 +128,7 @@ public class MMnKQueue {
 	 *      href="http://www.emis.de/journals/HOA/JAMDS/6/143.pdf">"Calculation
 	 *      of Steady-State Probabilities of M/M Queues: Further Approaches"</a>
 	 */
-	public double[] normalizedNew() {
+	private double[] computeProbabilities() {
 		double[] p = new double[k + 1];
 		int rhoCeiled = (int) (Math.ceil(rho) + 0.5d);
 
