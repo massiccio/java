@@ -17,12 +17,11 @@
 package math;
 
 /**
- * Various mathematical routines, including factorial and error function.
+ * Various mathematical routines related to the factorial function
  */
-public class MathUtils {
-	
-	
-	private MathUtils() {
+public class Factorial {
+
+	private Factorial() {
 		//
 	}
 
@@ -63,40 +62,54 @@ public class MathUtils {
 	 * @param n An integer value
 	 * @return n!.
 	 */
-	public static double factorial(int n) {
-		return Math.exp(factln(n));
+	public static long factorial(int n) {
+		return (long) (0.5 + Math.exp(factln(n)));
 	}
 
 	/**
-	 * Returns the complementary error function erfc(x) withf ractional error
-	 * everywhere less than 1.2 * 10^-7.
+	 * Computes x!/n! Even though an algorithm based on the gamma function can
+	 * be used, this algorithm computes x * (x-1) * ... * (x-n+1).
 	 * <p>
-	 * Routine from Numerical recipes in C, sec. 6.2 (page 221).
+	 * It is required that x >= n.
+	 * 
+	 * @throws IllegalArgumentException If n or j are negative or if n < j.
+	 * @see <a href="http://mathworld.wolfram.com/FallingFactorial.html>Falling
+	 *      Factorial</a>
 	 */
-	public static double erfc(double x) {
-		final double t = 1.0 / (1.0 + 0.5 * Math.abs(x));
-		final double ans = t
-			* Math.exp(-x
-				* x
-				- 1.26551223
-				+ t
-				* (1.00002368 + t
-					* (0.37409196 + t
-						* (0.09678418 + t
-							* (-0.18628806 + t
-								* (0.27886807 + t
-									* (-1.13520398 + t
-										* (1.48851587 + t
-											* (-0.82215223 + t * 0.17087277)))))))));
+	public static long fallingFactorial(int x, int n) {
+		if ((n < 0) || (x < 0))
+			throw new IllegalArgumentException("Negative factorial argument");
+		if (x < n)
+			throw new IllegalArgumentException("n < j");
 
-		return x >= 0.0 ? ans : -ans;
+		int tmp = x;
+		long res = 1L;
+		while (tmp >= (x - n + 1)) {
+			res *= tmp;
+			tmp--;
+		}
+		return res;
 	}
 
 	/**
-	 * Returns the error function erf(x) withf ractional error everywhere less
-	 * than 1.2 * 10^-7.
+	 * Computes the ration between n factorial and j factorial.
+	 * <p>
+	 * The employed algorithm computes n!/j! as (j+1) * (j+2) *...* n.
+	 * 
+	 * @throws IllegalArgumentException If n or j are negative or if n < j.
 	 */
-	public static double erf(double x) {
-		return 1.0 - erfc(x);
+	public static long factorialRatio(int n, int j) throws IllegalArgumentException {
+		if ((n < 0) || (j < 0))
+			throw new IllegalArgumentException("Negative factorial argument");
+		if (n < j)
+			throw new IllegalArgumentException("n < j");
+
+		int tmp = j + 1;
+		long res = 1L;
+		while (tmp <= n) {
+			res *= tmp;
+			tmp++;
+		}
+		return res;
 	}
 }
