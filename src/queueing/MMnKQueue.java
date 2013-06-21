@@ -57,7 +57,7 @@ public class MMnKQueue {
 	 * @param n The number of servers.
 	 * @param k The queue threshold.
 	 * @param rho The load.
-	 * @throws IllegalArgumentException If n < 1, &rho < 0, or n > k. 
+	 * @throws IllegalArgumentException If n < 1, &rho < 0, or n > k.
 	 */
 	public MMnKQueue(int n, int k, double rho) throws IllegalArgumentException {
 		if (n < 1) {
@@ -172,10 +172,8 @@ public class MMnKQueue {
 		return p;
 	}
 
-	
 	/**
 	 * Computes the probability that the response time exceeds x.
-	 * 
 	 * 
 	 * @param x The target response time.
 	 * @param mu The service rate.
@@ -189,14 +187,15 @@ public class MMnKQueue {
 		// Stores probabilities P(Wj>x) for each 0 <= j <= k-1
 		double[] P = new double[this.k + 1];
 
+		final double exp = Math.exp(-1.0 * mu * x);
 		if (n == 1) {
-			P[0] = Math.exp(-1.0 * mu * x);
+			P[0] = exp;
 
 			for (int j = 1; j < k; j++) {
 				P[j] = 0.0;
 				double sum = 0.0;
 				for (int i = 0; i <= j; i++) {
-					//XXX: this step can be improved by dividing (mu*x) 
+					// XXX: this step can be improved by dividing (mu*x)
 					// by i=0..j and summing the result
 					double addOn = Math.pow(mu * x, (double) i);
 					if (i != 0) {
@@ -205,28 +204,29 @@ public class MMnKQueue {
 					} // dividing addOn by factorial(i);
 					sum += addOn;
 				}
-				P[j] += Math.exp(-1.0 * mu * x) * sum;
+				P[j] += exp * sum;
 			}
 		} else {
 			// No queueing: the response time is exponentially distributed
 			for (int j = 0; j < n; j++)
-				P[j] = Math.exp(-1.0 * mu * x);
+				P[j] = exp;
 
 			// Some queueing: conditional the response time is distributed as
 			// the convolution of an Erlang distribution with parameters
 			// (j -n +1, n*mu) and an exponential distribution with parameter mu
+			final double expn = Math.exp(-1.0 * (double) n * mu * x) ;
 			for (int j = n; j <= k; j++) {
-				P[j] = Math.exp(-1.0 * mu * x)
-						* Math.pow(((double) n / (double) (n - 1)), (double) (j
-								- n + 1));
+				P[j] = exp
+					* Math.pow(((double) n / (double) (n - 1)),
+						(double) (j - n + 1));
 
 				double sum = 0.0;
 				for (int i = 0; i <= j - n; i++) {
 					double mult = Math.pow((double) n / (double) (n - 1),
-							(double) (j - n + 1));
+						(double) (j - n + 1));
 					double addOn = Math.pow((double) n * mu * x, (double) i)
-							- mult
-							* Math.pow((double) (n - 1) * mu * x, (double) i);
+						- mult
+						* Math.pow((double) (n - 1) * mu * x, (double) i);
 					if (i != 0) {
 						// XXX: this factorial is likely to be the cause of NaN
 						// for small values
@@ -236,7 +236,7 @@ public class MMnKQueue {
 
 					sum += addOn;
 				}
-				P[j] += Math.exp(-1.0 * (double) n * mu * x) * sum;
+				P[j] += expn * sum;
 			}
 		}
 
@@ -246,9 +246,9 @@ public class MMnKQueue {
 
 		double prob = 0.0;
 		for (int i = 0; i < P.length; i++) {
-//			System.out.println("P[W_" + i + "]>x = " + P[i]);
+			// System.out.println("P[W_" + i + "]>x = " + P[i]);
 			if (!Double.isNaN(P[i])) {
-				// XXX: some probabilities might be NaN. This happens when
+				// Some probabilities might be NaN. This happens when
 				// p[i] is really small, e.g., 9.79745930930059E-44
 				prob += P[i] * this.p[i];
 			}
@@ -285,13 +285,13 @@ public class MMnKQueue {
 		System.out.printf("Sum of probabilities (should be 1) %.20f\n", sum1);
 
 		System.out.printf("Most likely state [%d] with probability [%.10f]\n",
-				maxIndex, max);
+			maxIndex, max);
 
 		double x = 2.0;
 		double mu = 0.9;
 		System.out.printf("Probability that the response time exceeds %.2f sec"
-				+ " given that the service rate is %.2f [%.10f]\n", x, mu,
-				mmnk.calculateP(x, mu));
+			+ " given that the service rate is %.2f [%.10f]\n", x, mu,
+			mmnk.calculateP(x, mu));
 	}
 
 }
