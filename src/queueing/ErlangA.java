@@ -260,7 +260,7 @@ public class ErlangA {
 	 * Computes the steady-state average number of jobs inside the system
 	 * (either queueing or being served), E[L].
 	 */
-	public double avgJobsInSystem() {
+	public double getL() {
 		double sum = 0.0;
 		for (int i = 1; i < this.jobs.length; i++) {
 			sum += this.jobs[i];
@@ -329,7 +329,7 @@ public class ErlangA {
 		System.out.printf("E[W] %.10f\n", er.meanWaitingTime());
 		System.out.printf("E[W|W>0] %.10f\n", er.meanWaitingIfDelayed());
 		System.out.printf("E[Q] %.10f\n", er.avgQueueLen());
-		System.out.printf("E[L] %.10f\n", er.avgJobsInSystem());
+		System.out.printf("E[L] %.10f\n", er.getL());
 		System.out.printf("Throughput %.10f\n", er.getThroughput());
 	}
 }
