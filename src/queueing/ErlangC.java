@@ -17,6 +17,7 @@
 package queueing;
 
 import stats.NormalDistribution;
+import utils.DoubleArrayList;
 
 /**
  * Functions for the Erlang-C model (M/M/n queue).
@@ -29,14 +30,56 @@ import stats.NormalDistribution;
  * Approximation algorithms are provided to estimate the blocking probability in
  * closed form, the average waiting time in closed form, and the average waiting
  * time for GI/G/n queues.
+ * <p>
+ * All methods throw {@link IllegalArgumentException} if the system is unstable.
  */
 public class ErlangC {
 
-	
-	private ErlangC() {
-		//
+	private static final double ERR = 10E-9;
+
+	/** Number of servers. */
+	public final int n;
+
+	/** The arrival rate. */
+	public final double lam;
+
+	/** The average service time. */
+	public final double b;
+
+	/** Load (&rho; = &lambda; / &mu;). */
+	public final double load;
+
+	/** Array of probabilities. */
+	private double[] p;
+
+	/** The average number of jobs in the system. */
+	private double L;
+
+	/**
+	 * Creates a new M/M/n queue with the specified arguments.
+	 * 
+	 * @param n The number of servers.
+	 * @param lam The arrival rate.
+	 * @param b The average service time.
+	 * @throws IllegalArgumentException If lam * b >= n.
+	 */
+	public ErlangC(int n, double lam, double b) throws IllegalArgumentException {
+		this.n = n;
+		this.lam = lam;
+		this.b = b;
+		load = lam * b;
+		checkLoad(n, load);
+		p = computeProbabilities();
+		L = computeL();
 	}
-	
+
+	private static final void checkLoad(double n, double load)
+		throws IllegalArgumentException {
+		if (load >= n) {
+			throw new IllegalArgumentException("The system is overloaded");
+		}
+	}
+
 	/**
 	 * Computes the probability that all servers of an M/M/n queue with n trunks
 	 * and traffic intensity load are busy (i.e., the probability that a job
@@ -45,6 +88,7 @@ public class ErlangC {
 	 * @return The probability pn that a job will have to wait, 0.0 <= pn <= 1.0
 	 */
 	public static final double erlangC(int n, double load) {
+		checkLoad(n, load);
 		double pn = 0.0;
 		if (load > 0.0) {
 			double B = ErlangB.erlangB(n, load);
@@ -69,6 +113,7 @@ public class ErlangC {
 	 *      Limits for Queues with Many Exponential Servers</a>
 	 */
 	public static final double erlangCApprox(double n, double load) {
+		checkLoad(n, load);
 		double eta = (1.0 - (load / n)) * Math.sqrt(n);
 		final double phi = NormalDistribution.Phi(eta);
 
@@ -141,12 +186,33 @@ public class ErlangC {
 	 * @param b The average service time.
 	 * @return The average waiting time.
 	 */
-	public static final double meanWaitingTime(int n, double lam, double b) {
+	public static final double avgWait(int n, double lam, double b) {
 		double load = lam * b;
 		double pn = erlangC(n, load); // blocking probability
-		double mu = 1 / b;
+		double mu = 1.0 / b;
 		double w = pn / (n * mu - lam);
 		return w;
+	}
+
+	/**
+	 * Computes the average number of jobs in the system when the lam * b
+	 * Erlangs are offered to n trunks using Little's Law.
+	 */
+	public static final double getL(int n, double lam, double b) {
+		// final double load = lam * b;
+		// return (load / (n - load)) * erlangC(n, load) + load;
+		// could use also Little's Law: L= lam * getW()
+		return lam * getAvgResp(n, lam, b);
+	}
+
+	/**
+	 * Computes the average response time when the lam * b Erlangs are offered
+	 * to n trunks using the formula w + b, where w is the average waiting time.
+	 * 
+	 * @see #avgWait(int, double, double)
+	 */
+	public static final double getAvgResp(int n, double lam, double b) {
+		return avgWait(n, lam, b) + b;
 	}
 
 	/**
@@ -168,9 +234,9 @@ public class ErlangC {
 	 * @return The average waiting time.
 	 * @see "Approximations for the GI/G/m Queue"
 	 */
-	public static final double ggnMeanWait(int n, double lam, double b,
+	public static final double ggnAvgWait(int n, double lam, double b,
 		double ca2, double cs2) {
-		return meanWaitingTime(n, lam, b) * ((ca2 + cs2) / 2.0);
+		return avgWait(n, lam, b) * ((ca2 + cs2) / 2.0);
 	}
 
 	/**
@@ -188,11 +254,116 @@ public class ErlangC {
 	 * @param n The number of servers.
 	 * @return The estimated average waiting time for the given parameters.
 	 */
-	public static final double meanWaitApprox(int n, double lam, double b) {
+	public static final double avgWaitApprox(int n, double lam, double b) {
 		final double load = lam * b;
 
 		double pn = erlangCApprox(n, load);
+		System.out.println(pn);
 		return pn * b / (n - load);
+	}
+
+	/**
+	 * Computes the stationary distribution of the system being in state
+	 * <i>i</i>, i = 0...inf.
+	 * <p>
+	 * This algorithm computes the probabilities with an accuracy of 10^-9.
+	 * 
+	 * @see #ERR
+	 */
+	private final double[] computeProbabilities() {
+		// most likely state
+		final int rhoCeiled = (int) (Math.ceil(this.load) + 0.5d);
+		// stop when prob j is "small"
+		DoubleArrayList p = new DoubleArrayList(rhoCeiled + 1);
+
+		for (int i = 0; i < rhoCeiled; i++) {
+			p.add(i, 0.0);
+		}
+		p.add(rhoCeiled, 1.0);
+		double sum = 1.0;
+
+		// solve from p[rhoCeiled -1]...p[0] and p[rhoCeiled+1]...p[k]
+		// p[rhoCeiled-1]...p[0]
+		for (int j = rhoCeiled - 1; j >= 0; j--) {
+			double pj = (j + 1) * p.get(j + 1) / load;
+			p.set(j, pj);
+			sum += pj;
+		}
+
+		// solve for p[rhoCeiled+1]... Stop when p[j] becomes "small"
+		int j = rhoCeiled + 1;
+		double pj;
+		do {
+			pj = 0.0;
+			if (j < n) {
+				pj = p.get(j - 1) * load / j;
+			} else {
+				pj = p.get(j - 1) * load / n;
+			}
+			p.add(j, pj);
+			sum += pj;
+			j++;
+		} while (pj >= ERR);
+
+		double[] probs = p.toArray();
+		// normalize
+		for (int i = 0; i < probs.length; i++) {
+			probs[i] /= sum;
+		}
+		return probs;
+	}
+
+	/**
+	 * Computes the average number of jobs in the system.
+	 * 
+	 * @return The average number of jobs.
+	 */
+	private final double computeL() {
+		double L = 0d;
+		// avg. number of jobs present, see Eq. 11
+		for (int j = 1; j < p.length; j++) {
+			L += j * p[j];
+		}
+		return L;
+	}
+
+	/**
+	 * Gets the average number of jobs in the system.
+	 * <p>
+	 * This method computes the steady-state average number of jobs in the
+	 * system (waiting and being served) from the stationary distribution of
+	 * number of jobs in the system. The correctness of the returned result can
+	 * be verified using Little's Law, e.g., L = lam * W, where W is the average
+	 * response time.
+	 */
+	public double getL() {
+		return this.L;
+	}
+
+	/**
+	 * Gets the array of probabilities.
+	 * 
+	 * @return An array of probabilities. The sum should be <i>approximately</i>
+	 *         1 (apart from rounding errors). p[i] is the probability of being
+	 *         in state <i>i</i>
+	 */
+	public double[] getSteadyStateProbabilities() {
+		return this.p;
+	}
+
+	public static void main(String[] args) {
+		int n = 10;
+		double lam = 8.0;
+		double b = 1.0;
+		// System.out.println(getL(n, lam, b));
+		// System.out.println(meanWaitingTime(n, lam, b));
+		// avg. resp. time
+		double W = getAvgResp(n, lam, b);
+		// System.out.println(W);
+
+		// no. jobs in system -- little's law
+		double L = W * lam;
+		System.out.println(L + " " + new ErlangC(n, lam, b).getL());
 	}
 
 }
