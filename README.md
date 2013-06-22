@@ -1,10 +1,13 @@
-
 This repository includes some of the code I have written during my academic career (I am slowly adding more content).
 
 The http package includes a NIO-based HTTP load generator.
+
 The math package includes a number of numerical routines, e.g., several methods for the Gamma function and factorial, and some optimization algorithms (e.g., binary search).
+
 The queueing package includes exact methods as well as approximations for multi-server queueing models (Erlang-A, Erlang-B, Erlang-C, M/M/n/K, queues with overflow).
+
 The stats package includes some utilities for computing average, variance, etc., as well as some classes for generating numbers according to specific distributions.
+
 The utils package includes a number of utilities:
 - I/O utils: methods for finding the tail (last line) and the number of lines (excluding comments) in a text file
 - Array list of double (native)
