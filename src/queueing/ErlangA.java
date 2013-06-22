@@ -196,7 +196,7 @@ public class ErlangA {
 				break;
 			}
 		}
-		if (j == MAX_ITERATIONS) {
+		if (j > MAX_ITERATIONS) {
 			System.err.printf("axy did not converge, found %.10f\n", res);
 		}
 		
