@@ -34,16 +34,16 @@ package queueing;
 public class MMnKQueue {
 
 	/** Number of servers. */
-	private final int n;
+	public final int n;
 
 	/**
 	 * The queue threshold. When k jobs are in the system new jobs are
 	 * discarded.
 	 */
-	private final int k;
+	public final int k;
 
 	/** Load (&rho; = &lambda; / &mu;). */
-	private final double rho;
+	public final double load;
 
 	/** Array of probabilities. */
 	private double[] p;
@@ -56,28 +56,28 @@ public class MMnKQueue {
 	 * 
 	 * @param n The number of servers.
 	 * @param k The queue threshold.
-	 * @param rho The load.
+	 * @param load The load.
 	 * @throws IllegalArgumentException If n < 1, &rho < 0, or n > k.
 	 */
-	public MMnKQueue(int n, int k, double rho) throws IllegalArgumentException {
+	public MMnKQueue(int n, int k, double load) throws IllegalArgumentException {
 		if (n < 1) {
 			throw new IllegalArgumentException("Need at least one server!");
 		}
 		if (n > k) {
 			throw new IllegalArgumentException("n cannot be larger than k!");
 		}
-		if (rho < 0.0) {
+		if (load < 0.0) {
 			throw new IllegalArgumentException("The load must be >= 0");
 		}
 		this.n = n;
 		this.k = k;
-		this.rho = rho;
+		this.load = load;
 		p = computeProbabilities();
 		L = computeL();
 	}
 
 	/**
-	 * @return The average number of jobs in the system.
+	 * Gets the average number of jobs in the system.
 	 */
 	public double getL() {
 		return this.L;
@@ -109,11 +109,12 @@ public class MMnKQueue {
 	}
 
 	/**
-	 * Computes the stationary distribution of the number of jobs present.
+	 * Computes the stationary distribution of the system being in state
+	 * <i>i</i>, i = 0...K.
 	 * <p>
 	 * <strong>This is a correct version, added on October 13, 2011.</strong>
-	 * For a M/N/n/K queue with n = 2, K = 5, rho = 3, the following p[i] should
-	 * be found
+	 * For a M/N/n/K queue with n = 2, K = 5, &rho; = 3, the following p[i]
+	 * should be found
 	 * <ul>
 	 * <li>p[0] = 0.024653312788906
 	 * <li>p[1] = 0.073959938366718
@@ -128,9 +129,9 @@ public class MMnKQueue {
 	 *      href="http://www.emis.de/journals/HOA/JAMDS/6/143.pdf">"Calculation
 	 *      of Steady-State Probabilities of M/M Queues: Further Approaches"</a>
 	 */
-	private double[] computeProbabilities() {
+	private final double[] computeProbabilities() {
 		double[] p = new double[k + 1];
-		int rhoCeiled = (int) (Math.ceil(rho) + 0.5d);
+		int rhoCeiled = (int) (Math.ceil(load) + 0.5d);
 
 		double sum = 1d;
 		if (rhoCeiled > n) { // most likely state is p_k
@@ -138,27 +139,27 @@ public class MMnKQueue {
 			// start from p_k and move backwards
 			for (int i = k - 1; i >= 0; i--) {
 				if (i >= n) {
-					p[i] = n * p[i + 1] / rho;
+					p[i] = n * p[i + 1] / load;
 				} else { // index less than n
-					p[i] = (i + 1) * p[i + 1] / rho;
+					p[i] = (i + 1) * p[i + 1] / load;
 				}
 				sum += p[i];
 			}
 		} else { // most likely state is p_rhoCeiled
 			p[rhoCeiled] = 1d;
-			// solve from p[rho -1]...p[0] and p[rho+1]...p[k]
+			// solve from p[rhoCeiled -1]...p[0] and p[rhoCeiled+1]...p[k]
 
-			// p[0]...p[rho-1]
+			// p[rhoCeiled-1]...p[0]
 			for (int i = rhoCeiled - 1; i >= 0; i--) {
-				p[i] = (i + 1) * p[i + 1] / rho;
+				p[i] = (i + 1) * p[i + 1] / load;
 				sum += p[i];
 			}
-			// p[rho+1]...p[k]
+			// p[rhoCeiled+1]...p[k]
 			for (int i = rhoCeiled + 1; i <= k; i++) {
 				if (i < n) {
-					p[i] = (p[i - 1] * rho) / i;
+					p[i] = (p[i - 1] * load) / i;
 				} else {
-					p[i] = (p[i - 1] * rho) / n;
+					p[i] = (p[i - 1] * load) / n;
 				}
 				sum += p[i];
 			}
@@ -214,7 +215,7 @@ public class MMnKQueue {
 			// Some queueing: conditional the response time is distributed as
 			// the convolution of an Erlang distribution with parameters
 			// (j -n +1, n*mu) and an exponential distribution with parameter mu
-			final double expn = Math.exp(-1.0 * (double) n * mu * x) ;
+			final double expn = Math.exp(-1.0 * (double) n * mu * x);
 			for (int j = n; j <= k; j++) {
 				P[j] = exp
 					* Math.pow(((double) n / (double) (n - 1)),
