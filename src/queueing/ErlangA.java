@@ -188,13 +188,18 @@ public class ErlangA {
 	private static final double axy(double x, double y) {
 		double res = 1.0;
 		double tmp = 1.0;
-		for (int j = 1; j <= MAX_ITERATIONS; j++) {
+		int j;
+		for (j = 1; j <= MAX_ITERATIONS; j++) {
 			tmp *= y / (x + j);
 			res += tmp;
 			if (tmp < ERR) {
 				break;
 			}
 		}
+		if (j == MAX_ITERATIONS) {
+			System.err.printf("axy did not converge, found %.10f\n", res);
+		}
+		
 		return res;
 	}
 
