@@ -33,6 +33,9 @@ public class NormalDistribution {
 
 	/**
 	 * Standard normal cdf evaluated using Marsaglia's algorithm.
+	 * <p>
+	 * Probability that the standard normal variate &leq; x, computed with an
+	 * absolute error less than 8 * 10^-16.
 	 */
 	public static final double Phi(double x) {
 		if (x < -8.0)
@@ -50,7 +53,9 @@ public class NormalDistribution {
 	}
 
 	/**
-	 * Normal cdf with mean mu and stddev sigma
+	 * Normal cdf with mean mu and stddev sigma.
+	 * <p>
+	 * Probability that the normal variate N(&mu;, &sigma;) &leq; z.
 	 */
 	public static double Phi(double z, double mu, double sigma) {
 		return Phi((z - mu) / sigma);
@@ -68,42 +73,22 @@ public class NormalDistribution {
 
 	/**
 	 * Normal pdf with mean mu and stddev sigma.
+	 * <p>
+	 * Probability that the normal variate N(&mu;, &sigma;) = z.
 	 */
 	public static double phi(double x, double mu, double sigma) {
 		return phi((x - mu) / sigma) / sigma;
 	}
 
 	/**
-	 * Tail values for the standard normal distribution (complementary CDF),
-	 * i.e., 1 - &Phi;(x) = .5 * erfc(x/sqrt(2)) using Marsaglia's algorithm
+	 * Probability that the standard normal variate exceeds x.
+	 * <p>
+	 * This corresponds to the tail values for the standard normal distribution
+	 * (complementary CDF), i.e., 1 - &Phi;(x) = .5 * erfc(x/sqrt(2)) using
+	 * Marsaglia's algorithm.
 	 */
 	public static final double cPhi(double x) {
-		double R[] = { 1.25331413731550025, .421369229288054473,
-			.236652382913560671, .162377660896867462, .123131963257932296,
-			.0990285964717319214, .0827662865013691773, .0710695805388521071,
-			.0622586659950261958 };
-		int i, j;
-		i = j = (int) (0.5 * (Math.abs(x) + 1.0));
-		double pwr = 1.0;
-		double a = R[j];
-		double z = 2 * j;
-		double b = a * z - 1;
-		double h = Math.abs(x) - z;
-		double s = a + h * b;
-		double t = a;
-		double q = h * h;
-//		for (i = 2; s != t; i += 2) {
-		for (i = 2; Math.abs(s - t) > 0.000000001; i += 2) {
-			a = (a + z * b) / i;
-			b = (b + z * a) / (i + 1);
-			pwr *= q;
-			s = (t = s) + pwr * (a + h * b);
-		}
-		// .918938533... is log(PI*2)/2
-		s = s * Math.exp(-0.5 * x * x - .91893853320467274178);
-		if (x >= 0)
-			return (double) s;
-		return (double) (1. - s);
+		return 1.0 - Phi(x);
 	}
 
 	/**
