@@ -123,4 +123,13 @@ public class Average extends Counter {
 	public final double getRange() {
 		return getMax() - getMin();
 	}
+	
+	
+	public final static double mean(double[] array) {
+		Average avg = new Average();
+		for (double value: array) {
+			avg.add(value);
+		}
+		return avg.mean();
+	}
 }
