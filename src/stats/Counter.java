@@ -17,6 +17,8 @@
 
 package stats;
 
+import utils.Resettable;
+
 /**
  * @(#)file Counter.java
  * @(#)author Michele Mazzucco
@@ -29,7 +31,7 @@ package stats;
 /**
  * Counter
  */
-public class Counter {
+public class Counter implements Resettable {
 
     protected long counter;
 
@@ -57,7 +59,8 @@ public class Counter {
 		return counter;
 	}
     
-    protected void reset() {
+    
+    public void reset() {
     	this.counter = 0L;
     }
     
