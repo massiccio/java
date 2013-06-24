@@ -108,8 +108,8 @@ public class ExponentialRDG implements RDG {
      * @param mean The mean.
      * @return An exponentially distributed random number with the given mean.
      */
-    protected final double expD(double mean) {
-        return -mean * Math.log(1 - nextRandom());
+    public static final double expD(double mean) {
+        return -mean * Math.log(1.0 - nextRandom());
     }
 
 
@@ -119,6 +119,6 @@ public class ExponentialRDG implements RDG {
 
     
     public final double getRate() {
-        return 1d / getMean();
+        return 1.0 / getMean();
     }
 }
