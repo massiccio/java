@@ -142,12 +142,12 @@ public class LogNormalRDG extends ExponentialRDG {
         System.out.printf("mu %.5f, sigma %.5f, mean %.3f, cov2 %.5f\n", mu,
         sigma, p.getMean(), p.getScv());
 
-        Cov scv = new Cov();
+        CoefficientOfVariation scv = new CoefficientOfVariation();
         for (int i = 0; i < 1000000; i++) {
         	scv.add(p.generateDeviate());
         }
         System.out.printf("mean %10.10f\n", scv.mean());
-        System.out.printf("scv %10.10f\n", scv.getCov2());
+        System.out.printf("scv %10.10f\n", scv.cov2());
       }
 
 }
