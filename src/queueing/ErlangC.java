@@ -156,6 +156,7 @@ public class ErlangC {
 										// ensure the system is stable
 		double B = ErlangB.erlangB(n, load); // blocking prob. Erlang B
 		double wait = Double.MAX_VALUE;
+		final double mu = 1 / b;
 		// it is possible to employ bisection search here, but this while loop
 		// is likely to be faster, as we are reducing the number of times
 		// ErlangB is called
@@ -163,7 +164,6 @@ public class ErlangC {
 			n++;
 			B = ErlangB.computeRecursive(n, load, B);
 			double pn = n * B / (n - load * (1 - B)); // blocking prob. M/M/n
-			double mu = 1 / b;
 			wait = pn / (n * mu - lam);
 		}
 		return n;
