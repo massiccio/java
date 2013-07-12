@@ -148,7 +148,7 @@ public class ErlangC {
 	 * @return The minimum number of servers necessary
 	 */
 	public int findMinServersWait(double avgWait) {
-		if ((avgWait == 1.0) || (this.load == 0.0)) {
+		if (this.load == 0.0) {
 			return 0;
 		}
 
