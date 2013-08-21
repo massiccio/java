@@ -55,8 +55,8 @@ public class Average extends Counter {
 	public void reset() {
 		super.reset();
 		aggregate = 0L;
-		max = 0.d;
-		min = 0.d;
+		max = Double.MIN_VALUE;
+		min = Double.MAX_VALUE;
 	}
 
 	/**
