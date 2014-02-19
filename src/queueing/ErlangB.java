@@ -22,7 +22,17 @@ import math.optimization.BisectionSearch;
 import math.optimization.RootFunction;
 
 /**
- * @author <a href="mailto:michelemazzucco@gmail.com">Michele Mazzucco</a>
+ * Functions for the Erlang-B model (M/M/n/n queue).
+ * <p>
+ * Exact routines are provided for computing the blocking probability (including
+ * the scenario where the number of servers is non integer), the minimum number
+ * of servers necessary to handle a certain load with a certain blocking
+ * probability or the maximum load that a specified number of servers can handle
+ * with a predetermined blocking probability.
+ * <p>
+ * Approximation algorithms are provided to estimate the blocking probability in
+ * closed form, namely Rapp's approximation, which employs a parabola, and one
+ * algorithm which approximates the Erlang loss formula in a continuos form.
  */
 public class ErlangB {
 
@@ -45,13 +55,13 @@ public class ErlangB {
 	}
 
 	protected static final double computeRecursive(double n, double load,
-		double pn_1) {
+			double pn_1) {
 		return (load * pn_1) / (n + load * pn_1);
 	}
 
 	/**
 	 * Computes the blocking probability of an Erlang-B queue with n trunks and
-	 * traffic intensity load.
+	 * traffic intensity load using the upper incomplete Gamma function.
 	 * <p>
 	 * n is not integer.
 	 * 
@@ -121,7 +131,7 @@ public class ErlangB {
 	/**
 	 * Computes the blocking probability of an Erlang-B queue with n trunks and
 	 * traffic intensity load in closed form using Rapp approximation (which
-	 * employs a parabola)
+	 * employs a parabola).
 	 * <p>
 	 * This routine employs the approximates of the Erlang loss formula by a
 	 * parabola using Rapp's algorithm:
