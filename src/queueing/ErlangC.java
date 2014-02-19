@@ -142,8 +142,6 @@ public class ErlangC {
 	 * Determines the minimum number of servers necessary to handle the given
 	 * load with the desired average waiting time.
 	 * 
-	 * @param lam The arrival rate.
-	 * @param b The average service time.
 	 * @param avgWait The average waiting time.
 	 * @return The minimum number of servers necessary
 	 */
@@ -154,18 +152,15 @@ public class ErlangC {
 
 		int n = (int) Math.ceil(load); // min number of servers necesasry to
 										// ensure the system is stable
-		double B = ErlangB.erlangB(n, load); // blocking prob. Erlang B
-		double wait = Double.MAX_VALUE;
-		final double mu = 1 / b;
-		// it is possible to employ bisection search here, but this while loop
-		// is likely to be faster, as we are reducing the number of times
-		// ErlangB is called
-		while (wait > avgWait) {
-			n++;
-			B = ErlangB.computeRecursive(n, load, B);
-			double pn = n * B / (n - load * (1 - B)); // blocking prob. M/M/n
-			wait = pn / (n * mu - lam);
-		}
+		do {
+			double wait = avgWait(n, this.lam, this.b);
+			if (wait > avgWait) {
+				n++;
+			} else {
+				break;
+			}
+		} while (true);
+		
 		return n;
 	}
 
