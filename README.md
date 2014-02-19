@@ -2,7 +2,7 @@ This repository includes some of the code I have written during my academic care
 
 The http package includes a NIO-based HTTP load generator.
 
-The math package includes a number of numerical routines, e.g., several methods for the Gamma function and factorial, and some optimization algorithms (e.g., binary search).
+The math package includes a number of numerical routines, including methods for the Gamma function and the numerical integration, and some optimization algorithms (e.g., binary search).
 
 The queueing package includes exact methods as well as approximations for multi-server queueing models (Erlang-A, Erlang-B, Erlang-C, M/M/n/K, queues with overflow).
 

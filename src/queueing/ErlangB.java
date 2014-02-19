@@ -63,7 +63,7 @@ public class ErlangB {
 	 * Computes the blocking probability of an Erlang-B queue with n trunks and
 	 * traffic intensity load using the upper incomplete Gamma function.
 	 * <p>
-	 * n is not integer.
+	 * <strong>n is not integer.</strong>
 	 * 
 	 * @param n The number of servers.
 	 * @param load The offered load.
@@ -85,13 +85,17 @@ public class ErlangB {
 			return erlangB(nInt, load);
 		}
 
-		// first part of (8), e^ load / load^(-n)
-		double tmp = Math.exp(load * Math.log(Math.E) - n * Math.log(load));
-		// see http://mathworld.wolfram.com/RegularizedGammaFunction.html
-		// so either incompleteGammaComplement(n+1.0, load) * gamma(n+1.0);, or
-		double tmp1 = GammaFunction.upperIncomplete(n + 1.0, load);
-		tmp *= tmp1;
-		return 1.0 / tmp;
+		// first part of (8),  load^n / e^load
+		final double log1 = (n * Math.log(load) - load);
+		final double nPlus1 = n+1.0;
+		final double tmp2 = (GammaFunction.regularizedGammaQ(nPlus1, load));
+		if (tmp2 == 0.0) {
+			return 1.0;
+		}
+		// log upper incomplete (n+1, load)
+		final double log2 = Math.log(tmp2) + GammaFunction.gammln(nPlus1);
+		final double res = Math.exp(log1 - log2); 
+		return res;
 	}
 
 	/**
@@ -210,6 +214,11 @@ public class ErlangB {
 		// double max = findMaxLoad(10, 0.4);
 		// System.out.println(max);
 		// System.out.println(erlangB(10, max));
+
+		n = 181.45880536972368;
+		load = 191.1882233542687;
+		double res = erlangBNonInt(n, load);
+		System.out.println(res);
 	}
 
 	static class ErlangBFunction implements RootFunction {

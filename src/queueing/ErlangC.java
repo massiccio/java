@@ -35,7 +35,7 @@ import utils.DoubleArrayList;
  */
 public class ErlangC {
 
-	private static final double ERR = 10E-9;
+	private static final double ERR = 10E-15;
 
 	/** Number of servers. */
 	public final int n;
@@ -48,12 +48,6 @@ public class ErlangC {
 
 	/** Load (&rho; = &lambda; / &mu;). */
 	public final double load;
-
-	/** Array of probabilities. */
-	private double[] p;
-
-	/** The average number of jobs in the system. */
-	private double L;
 
 	/**
 	 * Creates a new M/M/n queue with the specified arguments.
@@ -69,8 +63,8 @@ public class ErlangC {
 		this.b = b;
 		load = lam * b;
 		checkLoad(n, load);
-		p = computeProbabilities();
-		L = computeL();
+		// p = computeProbabilities();
+		// L = computeL();
 	}
 
 	private static final void checkLoad(double n, double load)
@@ -125,11 +119,10 @@ public class ErlangC {
 	 * Finds the minimum number of servers which are capable of serving the
 	 * offered traffic with the given grade of service.
 	 * 
-	 * @param load The offered load.
 	 * @param waitProb The probability that a job will have to wait.
 	 * @return The minimum number of servers necessary
 	 */
-	public static int findMinServersBlocking(double load, double waitProb) {
+	public int findMinServersBlocking(double waitProb) {
 		if ((waitProb == 1.0) || (load == 0.0)) {
 			return 0;
 		}
@@ -154,9 +147,8 @@ public class ErlangC {
 	 * @param avgWait The average waiting time.
 	 * @return The minimum number of servers necessary
 	 */
-	public static int findMinServersWait(double lam, double b, double avgWait) {
-		final double load = lam * b;
-		if ((avgWait == 1.0) || (load == 0.0)) {
+	public int findMinServersWait(double avgWait) {
+		if (this.load == 0.0) {
 			return 0;
 		}
 
@@ -164,6 +156,7 @@ public class ErlangC {
 										// ensure the system is stable
 		double B = ErlangB.erlangB(n, load); // blocking prob. Erlang B
 		double wait = Double.MAX_VALUE;
+		final double mu = 1 / b;
 		// it is possible to employ bisection search here, but this while loop
 		// is likely to be faster, as we are reducing the number of times
 		// ErlangB is called
@@ -171,7 +164,6 @@ public class ErlangC {
 			n++;
 			B = ErlangB.computeRecursive(n, load, B);
 			double pn = n * B / (n - load * (1 - B)); // blocking prob. M/M/n
-			double mu = 1 / b;
 			wait = pn / (n * mu - lam);
 		}
 		return n;
@@ -181,13 +173,20 @@ public class ErlangC {
 	 * Determines the average waiting time, given the number of servers, average
 	 * arrival rate and average service time.
 	 * 
-	 * @param n The number of servers.
-	 * @param lam The average arrival rate.
-	 * @param b The average service time.
 	 * @return The average waiting time.
 	 */
-	public static final double avgWait(int n, double lam, double b) {
-		double load = lam * b;
+	public final double avgWait() {
+		return avgWait(this.n, this.lam, this.b);
+	}
+
+	/**
+	 * Determines the average waiting time, given the number of servers, average
+	 * arrival rate and average service time.
+	 * 
+	 * @return The average waiting time.
+	 */
+	public static double avgWait(int n, double lam, double b) {
+		final double load = lam * b;
 		double pn = erlangC(n, load); // blocking probability
 		double mu = 1.0 / b;
 		double w = pn / (n * mu - lam);
@@ -196,13 +195,13 @@ public class ErlangC {
 
 	/**
 	 * Computes the average number of jobs in the system when the lam * b
-	 * Erlangs are offered to n trunks using Little's Law.
+	 * Erlangs are offered to n trunks.
 	 */
 	public static final double getL(int n, double lam, double b) {
-		// final double load = lam * b;
-		// return (load / (n - load)) * erlangC(n, load) + load;
+		final double load = lam * b;
+		return (load / (n - load)) * erlangC(n, load) + load;
 		// could use also Little's Law: L= lam * getW()
-		return lam * getAvgResp(n, lam, b);
+		// return lam * getAvgResp(n, lam, b);
 	}
 
 	/**
@@ -211,8 +210,8 @@ public class ErlangC {
 	 * 
 	 * @see #avgWait(int, double, double)
 	 */
-	public static final double getAvgResp(int n, double lam, double b) {
-		return avgWait(n, lam, b) + b;
+	public final double avgResp() {
+		return avgWait() + this.b;
 	}
 
 	/**
@@ -254,11 +253,10 @@ public class ErlangC {
 	 * @param n The number of servers.
 	 * @return The estimated average waiting time for the given parameters.
 	 */
-	public static final double avgWaitApprox(int n, double lam, double b) {
+	public static double avgWaitApprox(int n, double lam, double b) {
 		final double load = lam * b;
+		final double pn = erlangCApprox(n, load);
 
-		double pn = erlangCApprox(n, load);
-		System.out.println(pn);
 		return pn * b / (n - load);
 	}
 
@@ -314,20 +312,6 @@ public class ErlangC {
 	}
 
 	/**
-	 * Computes the average number of jobs in the system.
-	 * 
-	 * @return The average number of jobs.
-	 */
-	private final double computeL() {
-		double L = 0d;
-		// avg. number of jobs present, see Eq. 11
-		for (int j = 1; j < p.length; j++) {
-			L += j * p[j];
-		}
-		return L;
-	}
-
-	/**
 	 * Gets the average number of jobs in the system.
 	 * <p>
 	 * This method computes the steady-state average number of jobs in the
@@ -336,8 +320,8 @@ public class ErlangC {
 	 * be verified using Little's Law, e.g., L = lam * W, where W is the average
 	 * response time.
 	 */
-	public double getL() {
-		return this.L;
+	public final double getL() {
+		return getL(this.n, this.lam, this.b);
 	}
 
 	/**
@@ -347,23 +331,28 @@ public class ErlangC {
 	 *         1 (apart from rounding errors). p[i] is the probability of being
 	 *         in state <i>i</i>
 	 */
-	public double[] getSteadyStateProbabilities() {
-		return this.p;
+	public final double[] getSteadyStateProbabilities() {
+		return computeProbabilities();
 	}
 
 	public static void main(String[] args) {
-		int n = 10;
-		double lam = 8.0;
-		double b = 1.0;
+		final int n = 10;
+		final double lam = 8.0;
+		final double b = 1.0;
 		// System.out.println(getL(n, lam, b));
 		// System.out.println(meanWaitingTime(n, lam, b));
 		// avg. resp. time
-		double W = getAvgResp(n, lam, b);
+
+		ErlangC erlangC = new ErlangC(n, lam, b);
+		double W = erlangC.avgResp();
 		// System.out.println(W);
 
 		// no. jobs in system -- little's law
 		double L = W * lam;
-		System.out.println(L + " " + new ErlangC(n, lam, b).getL());
+		System.out.println(L + " " + erlangC.getL());
+
+		System.out.println(erlangC.getL());
+		System.out.println(lam * erlangC.avgResp());
 	}
 
 }

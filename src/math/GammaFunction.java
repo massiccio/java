@@ -38,8 +38,7 @@ public class GammaFunction {
 
 	/** Number near the smallest representable. */
 	private static final double FPMIN = Double.MIN_VALUE;
-	
-	
+
 	private GammaFunction() {
 		//
 	}
@@ -52,8 +51,8 @@ public class GammaFunction {
 		x = y = tmp = ser = 0.0;
 
 		final double[] cof = { 76.18009172947146, -86.50532032941677,
-				24.01409824083091, -1.231739572450155, 0.1208650973866179e-2,
-				-0.5395239384953e-5 };
+			24.01409824083091, -1.231739572450155, 0.1208650973866179e-2,
+			-0.5395239384953e-5 };
 		int j;
 		y = x = xx;
 		tmp = x + 5.5;
@@ -105,8 +104,8 @@ public class GammaFunction {
 	}
 
 	/**
-	 * Returns the incomplete <strong>regularised</strong> gamma function Q(a,
-	 * x) = 1 − P(a, x).
+	 * Returns the upper incomplete <strong>regularised</strong> gamma function
+	 * Q(a, x) = 1 − P(a, x).
 	 * <p>
 	 * This is the same as Rgamma(a, x, lower=FALSE) in the zipfR in R.
 	 * 
@@ -117,7 +116,7 @@ public class GammaFunction {
 	public static double regularizedGammaQ(double a, double x) {
 		if (a <= 0.0)
 			throw new IllegalArgumentException(
-					"Invalid arguments in routine gammq");
+				"Invalid arguments in routine gammq");
 		return 1.0 - regularizedGammaP(a, x);
 	}
 
@@ -140,7 +139,7 @@ public class GammaFunction {
 	public static double regularizedGammaP(double a, double x) {
 		if (a <= 0.0)
 			throw new IllegalArgumentException(
-					"Invalid arguments in routine gammp");
+				"Invalid arguments in routine gammp");
 		if (x < (a + 1.0)) { // Use the series representation.
 			double gamser = gser(a, x);
 			return gamser;
@@ -179,7 +178,7 @@ public class GammaFunction {
 				}
 			}
 			throw new IllegalArgumentException(
-					"a too large, ITMAX too small in routine gser");
+				"a too large, ITMAX too small in routine gser");
 		}
 	}
 
@@ -213,7 +212,7 @@ public class GammaFunction {
 		}
 		if (i > ITMAX)
 			throw new IllegalArgumentException(
-					"a too large, ITMAX too small in gcf");
+				"a too large, ITMAX too small in gcf");
 		// Put factors in front.
 		double gln = gammln(a);
 		double gammcf = exp(-x + a * log(x) - gln) * h;
