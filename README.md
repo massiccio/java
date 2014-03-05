@@ -1,3 +1,8 @@
+Java Utils
+==========
+
+[![Build Status](https://travis-ci.org/massiccio/java.png?branch=master)](https://travis-ci.org/massiccio/java)
+
 This repository includes some of the code I have written during my academic career (I am slowly adding more content).
 
 The http package includes a NIO-based HTTP load generator.
