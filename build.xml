@@ -32,6 +32,8 @@
         <src path="${src.dir}" />
     </javac>
   </target>
+  
+  <target name="test" depends="init" />
 
   <target name="dist" depends="compile"
         description="generate the distribution" >
